@@ -13,7 +13,7 @@ public class StockSchedule {
     @Resource
     private RssService rssService;
 
-    @Scheduled(cron = "*/30 * * * * ?")
+    @Scheduled(cron = "*/10 * * * * ?")
     public void fetchStockInfo() {
         rssService.displayRss();
     }

@@ -7,9 +7,11 @@ import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.io.SyndFeedInput;
 import com.rometools.rome.io.XmlReader;
 import com.tiv.stock.monitor.web.common.Constants;
+import com.tiv.stock.monitor.web.common.StockTagEnum;
 import com.tiv.stock.monitor.web.entity.StockRssInfo;
 import com.tiv.stock.monitor.web.service.RssService;
 import com.tiv.stock.monitor.web.utils.GMTDateConvertUtil;
+import com.tiv.stock.monitor.web.utils.StockTagCrawlerUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -45,15 +47,22 @@ public class RssServiceImpl implements RssService {
         for (SyndEntry rss : rssList) {
             // EquipmentShare Prices Initial Public Offering | EQPT Stock News
             String rssTitle = rss.getTitle();
-
+            String stockTitle = getStockTitle(rssTitle);
             StockRssInfo stockRssInfo = StockRssInfo.builder()
                     .stockCode(getStockCode(rssTitle))
-                    .title(getStockTitle(rssTitle))
+                    .title(stockTitle)
                     .link(rss.getLink())
                     .publishTimeGmt(GMTDateConvertUtil.convertGmt(rss.getPublishedDate()))
                     .publishTimeCn(GMTDateConvertUtil.convertGmtToBeijing(rss.getPublishedDate()))
                     .build();
-            System.out.println(JSONUtil.toJsonStr(stockRssInfo));
+            try {
+                List<String> tags = StockTagCrawlerUtil.getTags(stockTitle);
+                stockRssInfo.setTags(getTagsCn(tags));
+            } catch (Exception e) {
+                log.error("displayRss--获取股票标签失败,rssTitle:{}", rssTitle, e);
+                stockRssInfo.setTags(JSONUtil.toJsonStr(Collections.emptyList()));
+            }
+            System.out.println(stockRssInfo);
         }
 
     }
@@ -73,6 +82,14 @@ public class RssServiceImpl implements RssService {
         int stockNewsIndex = stockStr.indexOf(Constants.STOCK_NEWS_SUFFIX);
         // EQPT
         return stockStr.substring(0, stockNewsIndex).trim();
+    }
+
+    private String getTagsCn(List<String> tags) {
+        List<String> tagsCn = tags.stream().map(tag -> {
+            String desc = StockTagEnum.getDescByKey(tag);
+            return desc != null ? desc : tag;
+        }).toList();
+        return JSONUtil.toJsonStr(tagsCn);
     }
 
 }
