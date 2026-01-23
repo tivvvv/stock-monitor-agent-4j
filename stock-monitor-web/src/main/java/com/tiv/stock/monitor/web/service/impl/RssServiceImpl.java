@@ -1,10 +1,15 @@
 package com.tiv.stock.monitor.web.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.json.JSONUtil;
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.io.SyndFeedInput;
 import com.rometools.rome.io.XmlReader;
+import com.tiv.stock.monitor.web.common.Constants;
+import com.tiv.stock.monitor.web.entity.StockRssInfo;
 import com.tiv.stock.monitor.web.service.RssService;
+import com.tiv.stock.monitor.web.utils.GMTDateConvertUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -34,7 +39,40 @@ public class RssServiceImpl implements RssService {
     @Override
     public void displayRss() {
         List<SyndEntry> rssList = this.fetchRssFeed(STOCK_RSS_URL);
-        System.out.println(rssList);
+        if (CollUtil.isEmpty(rssList)) {
+            return;
+        }
+        for (SyndEntry rss : rssList) {
+            // EquipmentShare Prices Initial Public Offering | EQPT Stock News
+            String rssTitle = rss.getTitle();
+
+            StockRssInfo stockRssInfo = StockRssInfo.builder()
+                    .stockCode(getStockCode(rssTitle))
+                    .title(getStockTitle(rssTitle))
+                    .link(rss.getLink())
+                    .publishTimeGmt(GMTDateConvertUtil.convertGmt(rss.getPublishedDate()))
+                    .publishTimeCn(GMTDateConvertUtil.convertGmtToBeijing(rss.getPublishedDate()))
+                    .build();
+            System.out.println(JSONUtil.toJsonStr(stockRssInfo));
+        }
+
+    }
+
+    private String getStockTitle(String rssTitle) {
+        // EquipmentShare Prices Initial Public Offering | EQPT Stock News
+        String[] titleArr = rssTitle.split("\\|");
+        // EquipmentShare Prices Initial Public Offering
+        return titleArr[0].trim();
+    }
+
+    private String getStockCode(String rssTitle) {
+        // EquipmentShare Prices Initial Public Offering | EQPT Stock News
+        String[] titleArr = rssTitle.split("\\|");
+        //  EQPT Stock News
+        String stockStr = titleArr[titleArr.length - 1];
+        int stockNewsIndex = stockStr.indexOf(Constants.STOCK_NEWS_SUFFIX);
+        // EQPT
+        return stockStr.substring(0, stockNewsIndex).trim();
     }
 
 }
