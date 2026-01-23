@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: stock-monitor-web
+  profiles:
+    active: dev
+
+logging:
+  level:
+    root: info
