@@ -9,19 +9,25 @@ import com.rometools.rome.io.XmlReader;
 import com.tiv.stock.monitor.web.common.Constants;
 import com.tiv.stock.monitor.web.common.StockTagEnum;
 import com.tiv.stock.monitor.web.entity.StockRssInfo;
+import com.tiv.stock.monitor.web.mapper.StockRssInfoMapper;
 import com.tiv.stock.monitor.web.service.RssService;
 import com.tiv.stock.monitor.web.utils.GMTDateConvertUtil;
 import com.tiv.stock.monitor.web.utils.StockTagCrawlerUtil;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 @Slf4j
 @Service
 public class RssServiceImpl implements RssService {
+
+    @Resource
+    private StockRssInfoMapper stockRssInfoMapper;
 
     private static final String STOCK_RSS_URL = "https://www.stocktitan.net/rss";
 
@@ -31,6 +37,7 @@ public class RssServiceImpl implements RssService {
             URL url = new URL(rssUrl);
             SyndFeedInput input = new SyndFeedInput();
             SyndFeed feed = input.build(new XmlReader(url));
+            log.info("fetchRssFeed--成功,抓取RSS[{}]条", feed.getEntries().size());
             return feed.getEntries();
         } catch (Exception e) {
             log.error("fetchRssFeed--失败,rssUrl:{}", rssUrl, e);
@@ -44,6 +51,7 @@ public class RssServiceImpl implements RssService {
         if (CollUtil.isEmpty(rssList)) {
             return;
         }
+        List<StockRssInfo> stockRssInfos = new ArrayList<>();
         for (SyndEntry rss : rssList) {
             // EquipmentShare Prices Initial Public Offering | EQPT Stock News
             String rssTitle = rss.getTitle();
@@ -62,9 +70,9 @@ public class RssServiceImpl implements RssService {
                 log.error("displayRss--获取股票标签失败,rssTitle:{}", rssTitle, e);
                 stockRssInfo.setTags(JSONUtil.toJsonStr(Collections.emptyList()));
             }
-            System.out.println(stockRssInfo);
+            stockRssInfos.add(stockRssInfo);
         }
-
+        stockRssInfoMapper.insert(stockRssInfos);
     }
 
     private String getStockTitle(String rssTitle) {
