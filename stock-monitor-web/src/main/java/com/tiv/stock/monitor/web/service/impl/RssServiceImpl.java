@@ -21,6 +21,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -47,31 +48,43 @@ public class RssServiceImpl implements RssService {
 
     @Override
     public void displayRss() {
+        // 1. 获取股票新闻
         List<SyndEntry> rssList = this.fetchRssFeed(STOCK_RSS_URL);
         if (CollUtil.isEmpty(rssList)) {
             return;
         }
+        List<String> stockTitles = new ArrayList<>();
         List<StockRssInfo> stockRssInfos = new ArrayList<>();
+
         for (SyndEntry rss : rssList) {
             // EquipmentShare Prices Initial Public Offering | EQPT Stock News
             String rssTitle = rss.getTitle();
             String stockTitle = getStockTitle(rssTitle);
+            stockTitles.add(stockTitle);
+
             StockRssInfo stockRssInfo = StockRssInfo.builder()
                     .stockCode(getStockCode(rssTitle))
                     .title(stockTitle)
                     .link(rss.getLink())
                     .publishTimeGmt(GMTDateConvertUtil.convertGmt(rss.getPublishedDate()))
                     .publishTimeCn(GMTDateConvertUtil.convertGmtToBeijing(rss.getPublishedDate()))
+                    .tags(JSONUtil.toJsonStr(Collections.emptyList()))
                     .build();
-            try {
-                List<String> tags = StockTagCrawlerUtil.getTags(stockTitle);
-                stockRssInfo.setTags(getTagsCn(tags));
-            } catch (Exception e) {
-                log.error("displayRss--获取股票标签失败,rssTitle:{}", rssTitle, e);
-                stockRssInfo.setTags(JSONUtil.toJsonStr(Collections.emptyList()));
-            }
             stockRssInfos.add(stockRssInfo);
         }
+        // 2. 批量获取股票信息标签
+        try {
+            Map<String, List<String>> title2TagsMap = StockTagCrawlerUtil.getTags(stockTitles);
+            for (StockRssInfo stockRssInfo : stockRssInfos) {
+                String stockTitle = stockRssInfo.getTitle();
+                if (title2TagsMap.containsKey(stockTitle)) {
+                    stockRssInfo.setTags(getTagsCn(title2TagsMap.get(stockTitle)));
+                }
+            }
+        } catch (Exception e) {
+            log.error("displayRss--批量获取股票信息标签,stockTitles:{}", JSONUtil.toJsonStr(stockTitles), e);
+        }
+        // 3. 保存股票信息
         stockRssInfoMapper.insert(stockRssInfos);
     }
 

@@ -6,7 +6,9 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 股票标签爬虫工具类
@@ -15,7 +17,7 @@ public class StockTagCrawlerUtil {
 
     private static final String URL = "https://www.stocktitan.net/news/live.html";
 
-    public static List<String> getTags(String title) throws Exception {
+    public static Map<String, List<String>> getTags(List<String> titles) throws Exception {
         Document doc = Jsoup.connect(URL)
                 .userAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
                 .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8")
@@ -36,34 +38,38 @@ public class StockTagCrawlerUtil {
                 .followRedirects(true)
                 .ignoreHttpErrors(true)
                 .get();
-        return extractTagsByTitle(doc, title);
+        return extractTagsByTitle(doc, titles);
     }
 
     /**
-     * 根据新闻标题提取标签数组
+     * 根据新闻标题提取标签
      */
-    private static List<String> extractTagsByTitle(Document doc, String title) {
-        List<String> result = new ArrayList<>();
-        // 1. 找到所有新闻标题节点
-        Elements titleElements = doc.select("a.feed-link");
-        for (Element titleEl : titleElements) {
-            if (title.equals(titleEl.text())) {
+    private static Map<String, List<String>> extractTagsByTitle(Document doc, List<String> titles) {
+        Map<String, List<String>> title2TagsMap = new HashMap<>();
+        for (String title : titles) {
+            List<String> tags = new ArrayList<>();
+            // 1. 找到所有新闻标题节点
+            Elements titleElements = doc.select("a.feed-link");
+            for (Element titleEl : titleElements) {
+                if (title.equals(titleEl.text())) {
+                    // 2. 向上找到整个news-row
+                    Element newsRow = titleEl.closest("div.news-row");
+                    if (newsRow == null) {
+                        continue;
+                    }
 
-                // 2. 向上找到整个news-row
-                Element newsRow = titleEl.closest("div.news-row");
-                if (newsRow == null) {
-                    continue;
+                    // 3. 在该news-row中找tags
+                    Elements tagElements = newsRow.select("div[name=tags] span.badge");
+                    for (Element tag : tagElements) {
+                        tags.add(tag.text().trim());
+                    }
+                    break;
                 }
-
-                // 3. 在该news-row中找tags
-                Elements tagElements = newsRow.select("div[name=tags] span.badge");
-                for (Element tag : tagElements) {
-                    result.add(tag.text().trim());
-                }
-                break;
             }
+            title2TagsMap.put(title, tags);
         }
-        return result;
+
+        return title2TagsMap;
     }
 
 }
