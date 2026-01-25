@@ -4,4 +4,6 @@ public interface Constants {
 
     String STOCK_NEWS_SUFFIX = "Stock News";
 
+    String REDIS_STOCK_NEWS = "stock_news:";
+
 }

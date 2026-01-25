@@ -3,6 +3,12 @@ spring:
     name: stock-monitor-web
   profiles:
     active: dev
+  data:
+    redis:
+      host: localhost
+      timeout: 5000
+      port: 6379
+      database: 0
 
 mybatis-plus:
   global-config:
