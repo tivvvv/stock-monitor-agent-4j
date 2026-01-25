@@ -9,8 +9,8 @@ import com.rometools.rome.io.XmlReader;
 import com.tiv.stock.monitor.web.common.Constants;
 import com.tiv.stock.monitor.web.common.StockTagEnum;
 import com.tiv.stock.monitor.web.entity.StockRssInfo;
-import com.tiv.stock.monitor.web.mapper.StockRssInfoMapper;
 import com.tiv.stock.monitor.web.service.RssService;
+import com.tiv.stock.monitor.web.service.StockService;
 import com.tiv.stock.monitor.web.utils.GMTDateConvertUtil;
 import com.tiv.stock.monitor.web.utils.StockTagCrawlerUtil;
 import jakarta.annotation.Resource;
@@ -28,7 +28,7 @@ import java.util.Map;
 public class RssServiceImpl implements RssService {
 
     @Resource
-    private StockRssInfoMapper stockRssInfoMapper;
+    private StockService stockService;
 
     private static final String STOCK_RSS_URL = "https://www.stocktitan.net/rss";
 
@@ -62,14 +62,22 @@ public class RssServiceImpl implements RssService {
             String stockTitle = getStockTitle(rssTitle);
             stockTitles.add(stockTitle);
 
+            String stockCode = getStockCode(rssTitle);
+            String link = rss.getLink();
+
             StockRssInfo stockRssInfo = StockRssInfo.builder()
-                    .stockCode(getStockCode(rssTitle))
+                    .stockCode(stockCode)
                     .title(stockTitle)
-                    .link(rss.getLink())
+                    .link(link)
                     .publishTimeGmt(GMTDateConvertUtil.convertGmt(rss.getPublishedDate()))
                     .publishTimeCn(GMTDateConvertUtil.convertGmtToBeijing(rss.getPublishedDate()))
                     .tags(JSONUtil.toJsonStr(Collections.emptyList()))
                     .build();
+            // 根据股票代码和新闻链接判重
+            if (stockService.isStockNewsExist(stockCode, link)) {
+                log.info("displayRss--股票新闻已存在,stockCode:{},link:{}", stockCode, link);
+                continue;
+            }
             stockRssInfos.add(stockRssInfo);
         }
         // 2. 批量获取股票信息标签
@@ -85,7 +93,7 @@ public class RssServiceImpl implements RssService {
             log.error("displayRss--批量获取股票信息标签,stockTitles:{}", JSONUtil.toJsonStr(stockTitles), e);
         }
         // 3. 保存股票信息
-        stockRssInfoMapper.insert(stockRssInfos);
+        stockService.saveStockNews(stockRssInfos);
     }
 
     private String getStockTitle(String rssTitle) {
