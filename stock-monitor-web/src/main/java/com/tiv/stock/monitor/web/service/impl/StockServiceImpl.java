@@ -1,6 +1,7 @@
 package com.tiv.stock.monitor.web.service.impl;
 
 import cn.hutool.core.util.BooleanUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.tiv.stock.monitor.web.common.Constants;
 import com.tiv.stock.monitor.web.entity.StockRssInfo;
 import com.tiv.stock.monitor.web.mapper.StockRssInfoMapper;
@@ -10,6 +11,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -39,6 +41,16 @@ public class StockServiceImpl implements StockService {
             // 设置7天过期时间
             redisTemplate.expire(key, Duration.ofDays(7));
         }
+    }
+
+    @Override
+    public Long getStockNewsCount(String stockCode, LocalDateTime startTimeGmt, LocalDateTime endTimeGmt) {
+        QueryWrapper<StockRssInfo> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("stock_code", stockCode)
+                .ge("publish_time_gmt", startTimeGmt)
+                .le("publish_time_gmt", endTimeGmt);
+
+        return stockRssInfoMapper.selectCount(queryWrapper);
     }
 
 }

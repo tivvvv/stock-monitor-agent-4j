@@ -1,5 +1,6 @@
 package com.tiv.stock.monitor.web.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.json.JSONUtil;
 import com.rometools.rome.feed.synd.SyndEntry;
@@ -8,6 +9,7 @@ import com.rometools.rome.io.SyndFeedInput;
 import com.rometools.rome.io.XmlReader;
 import com.tiv.stock.monitor.web.common.Constants;
 import com.tiv.stock.monitor.web.common.StockTagEnum;
+import com.tiv.stock.monitor.web.entity.StockMsg;
 import com.tiv.stock.monitor.web.entity.StockRssInfo;
 import com.tiv.stock.monitor.web.service.RssService;
 import com.tiv.stock.monitor.web.service.StockService;
@@ -18,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.net.URL;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -75,7 +78,7 @@ public class RssServiceImpl implements RssService {
                     .build();
             // 根据股票代码和新闻链接判重
             if (stockService.isStockNewsExist(stockCode, link)) {
-                log.info("displayRss--股票新闻已存在,stockCode:{},link:{}", stockCode, link);
+                log.debug("displayRss--股票新闻已存在,stockCode:{},link:{}", stockCode, link);
                 continue;
             }
             stockRssInfos.add(stockRssInfo);
@@ -94,6 +97,23 @@ public class RssServiceImpl implements RssService {
         }
         // 3. 保存股票信息
         stockService.saveStockNews(stockRssInfos);
+
+        // 4. 构建股票消息
+        List<StockMsg> stockMsgs = new ArrayList<>();
+        for (StockRssInfo stockRssInfo : stockRssInfos) {
+            String stockCode = stockRssInfo.getStockCode();
+            StockMsg stockMsg = new StockMsg();
+            BeanUtil.copyProperties(stockRssInfo, stockMsg);
+
+            LocalDateTime plus1Minute = GMTDateConvertUtil.plus1Minute(stockRssInfo.getPublishTimeGmt());
+            stockMsg.setCountsIn24Hour(stockService.getStockNewsCount(stockCode,
+                            GMTDateConvertUtil.minus24Hour(stockRssInfo.getPublishTimeGmt()), plus1Minute))
+                    .setCountsIn3Day(stockService.getStockNewsCount(stockCode,
+                            GMTDateConvertUtil.minus3Day(stockRssInfo.getPublishTimeGmt()), plus1Minute))
+                    .setCountsIn1Week(stockService.getStockNewsCount(stockCode,
+                            GMTDateConvertUtil.minus1Week(stockRssInfo.getPublishTimeGmt()), plus1Minute));
+            stockMsgs.add(stockMsg);
+        }
     }
 
     private String getStockTitle(String rssTitle) {
