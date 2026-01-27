@@ -13,6 +13,7 @@ import com.tiv.stock.monitor.web.entity.StockMsg;
 import com.tiv.stock.monitor.web.entity.StockRssInfo;
 import com.tiv.stock.monitor.web.service.RssService;
 import com.tiv.stock.monitor.web.service.StockService;
+import com.tiv.stock.monitor.web.utils.BaiduTranslateUtil;
 import com.tiv.stock.monitor.web.utils.GMTDateConvertUtil;
 import com.tiv.stock.monitor.web.utils.StockTagCrawlerUtil;
 import jakarta.annotation.Resource;
@@ -32,6 +33,9 @@ public class RssServiceImpl implements RssService {
 
     @Resource
     private StockService stockService;
+
+    @Resource
+    private BaiduTranslateUtil baiduTranslateUtil;
 
     private static final String STOCK_RSS_URL = "https://www.stocktitan.net/rss";
 

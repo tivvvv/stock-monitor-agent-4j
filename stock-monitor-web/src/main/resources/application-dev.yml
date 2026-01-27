@@ -17,3 +17,8 @@ spring:
       idle-timeout: 600000
       max-lifetime: 18000000
       connection-test-query: SELECT 1
+
+translate:
+  url: url
+  appId: appId
+  secretKey: secretKey
