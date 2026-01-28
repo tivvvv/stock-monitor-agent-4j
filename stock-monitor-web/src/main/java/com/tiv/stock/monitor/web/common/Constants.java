@@ -6,4 +6,6 @@ public interface Constants {
 
     String REDIS_STOCK_NEWS = "stock_news:";
 
+    Integer TRANSLATE_MAX_LENGTH = 3000;
+
 }
