@@ -27,12 +27,12 @@ public class ServiceExecutionTimeAspect {
         stopWatch.stop();
         long executeTime = stopWatch.getTotalTimeMillis();
 
-        if (executeTime > 5000) {
-            log.error("SLOW: {} took {} ms, args: {}", pointCut, executeTime, joinPoint.getArgs());
-        } else if (executeTime > 2000) {
-            log.warn("MODERATE: {} took {} ms, args: {}", pointCut, executeTime, joinPoint.getArgs());
+        if (executeTime > 10_000) {
+            log.error("[缓慢方法]: {} took {} ms, args: {}", pointCut, executeTime, joinPoint.getArgs());
+        } else if (executeTime > 5_000) {
+            log.warn("[较慢方法]: {} took {} ms, args: {}", pointCut, executeTime, joinPoint.getArgs());
         } else {
-            log.debug("FAST: {} took {} ms, args: {}", pointCut, executeTime, joinPoint.getArgs());
+            log.debug("[正常方法]: {} took {} ms, args: {}", pointCut, executeTime, joinPoint.getArgs());
         }
         return proceed;
     }

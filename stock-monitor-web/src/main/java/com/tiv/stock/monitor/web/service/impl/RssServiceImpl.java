@@ -2,6 +2,8 @@ package com.tiv.stock.monitor.web.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.text.CharSequenceUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
@@ -65,10 +67,9 @@ public class RssServiceImpl implements RssService {
 
         for (SyndEntry rss : rssList) {
             // EquipmentShare Prices Initial Public Offering | EQPT Stock News
-            String rssTitle = rss.getTitle();
-            String stockTitle = getStockTitle(rssTitle);
-            stockTitles.add(stockTitle);
+            String rssTitle = sanitizeTitle(rss.getTitle());
 
+            String stockTitle = getStockTitle(rssTitle);
             String stockCode = getStockCode(rssTitle);
             String link = rss.getLink();
 
@@ -85,9 +86,21 @@ public class RssServiceImpl implements RssService {
                 log.debug("displayRss--股票新闻已存在,stockCode:{},link:{}", stockCode, link);
                 continue;
             }
+            stockTitles.add(stockTitle);
             stockRssInfos.add(stockRssInfo);
         }
-        // 2. 批量获取股票信息标签
+
+        if (CollUtil.isEmpty(stockRssInfos)) {
+            return;
+        }
+
+        // 2. 翻译股票新闻标题
+        Map<String, String> enTitleToCnTitle = baiduTranslateUtil.translateEnToCnBatch(stockTitles);
+        stockRssInfos.forEach(info -> {
+            info.setTitleCn(enTitleToCnTitle.get(info.getTitle()));
+        });
+
+        // 3. 批量获取股票信息标签
         try {
             Map<String, List<String>> title2TagsMap = StockTagCrawlerUtil.getTags(stockTitles);
             for (StockRssInfo stockRssInfo : stockRssInfos) {
@@ -99,10 +112,11 @@ public class RssServiceImpl implements RssService {
         } catch (Exception e) {
             log.error("displayRss--批量获取股票信息标签,stockTitles:{}", JSONUtil.toJsonStr(stockTitles), e);
         }
-        // 3. 保存股票信息
+
+        // 4. 保存股票信息
         stockService.saveStockNews(stockRssInfos);
 
-        // 4. 构建股票消息
+        // 5. 构建股票消息
         List<StockMsg> stockMsgs = new ArrayList<>();
         for (StockRssInfo stockRssInfo : stockRssInfos) {
             String stockCode = stockRssInfo.getStockCode();
@@ -118,6 +132,10 @@ public class RssServiceImpl implements RssService {
                             GMTDateConvertUtil.minus1Week(stockRssInfo.getPublishTimeGmt()), plus1Minute));
             stockMsgs.add(stockMsg);
         }
+    }
+
+    private String sanitizeTitle(String rssTitle) {
+        return StrUtil.trim(CharSequenceUtil.replaceChars(rssTitle, "\r\n\"\t“”", " "));
     }
 
     private String getStockTitle(String rssTitle) {
