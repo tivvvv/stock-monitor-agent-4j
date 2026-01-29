@@ -22,3 +22,8 @@ translate:
   url: url
   appId: appId
   secretKey: secretKey
+
+dingTalk:
+  url: url
+  robotToken: robotToken
+  secretKey: secretKey

@@ -8,4 +8,6 @@ public interface Constants {
 
     Integer TRANSLATE_MAX_LENGTH = 3000;
 
+    String HMAC_SHA256 = "HmacSHA256";
+
 }

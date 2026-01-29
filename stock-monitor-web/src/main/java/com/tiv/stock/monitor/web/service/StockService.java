@@ -1,5 +1,6 @@
 package com.tiv.stock.monitor.web.service;
 
+import com.tiv.stock.monitor.web.entity.StockMsg;
 import com.tiv.stock.monitor.web.entity.StockRssInfo;
 
 import java.time.LocalDateTime;
@@ -12,5 +13,9 @@ public interface StockService {
     void saveStockNews(List<StockRssInfo> stockRssInfos);
 
     Long getStockNewsCount(String stockCode, LocalDateTime startTimeGmt, LocalDateTime endTimeGmt);
+
+    String formatStockMsgs(List<StockMsg> stockMsgs);
+
+    String formatStockMsg(StockMsg stockMsg);
 
 }
