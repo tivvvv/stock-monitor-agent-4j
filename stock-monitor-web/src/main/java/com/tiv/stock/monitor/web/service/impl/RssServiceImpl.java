@@ -16,6 +16,7 @@ import com.tiv.stock.monitor.web.entity.StockRssInfo;
 import com.tiv.stock.monitor.web.service.RssService;
 import com.tiv.stock.monitor.web.service.StockService;
 import com.tiv.stock.monitor.web.utils.BaiduTranslateUtil;
+import com.tiv.stock.monitor.web.utils.DingTalkUtil;
 import com.tiv.stock.monitor.web.utils.GMTDateConvertUtil;
 import com.tiv.stock.monitor.web.utils.StockTagCrawlerUtil;
 import jakarta.annotation.Resource;
@@ -38,6 +39,9 @@ public class RssServiceImpl implements RssService {
 
     @Resource
     private BaiduTranslateUtil baiduTranslateUtil;
+
+    @Resource
+    private DingTalkUtil dingTalkUtil;
 
     private static final String STOCK_RSS_URL = "https://www.stocktitan.net/rss";
 
@@ -131,6 +135,13 @@ public class RssServiceImpl implements RssService {
                     .setCountsIn1Week(stockService.getStockNewsCount(stockCode,
                             GMTDateConvertUtil.minus1Week(stockRssInfo.getPublishTimeGmt()), plus1Minute));
             stockMsgs.add(stockMsg);
+        }
+        if (CollUtil.isNotEmpty(stockMsgs)) {
+            // 每10条消息分组发送
+            CollUtil.split(stockMsgs, 10).forEach(batch -> {
+                String textContent = stockService.formatStockMsgs(batch);
+                dingTalkUtil.sendDingTalkMessage(textContent, null);
+            });
         }
     }
 
