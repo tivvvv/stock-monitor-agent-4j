@@ -59,13 +59,13 @@ public class StockServiceImpl implements StockService {
     public String formatStockMsgs(List<StockMsg> stockMsgs) {
         return stockMsgs.stream()
                 .map(this::formatStockMsg)
-                .collect(Collectors.joining("\n----------\n"));
+                .collect(Collectors.joining("\n--------------------\n"));
     }
 
     @Override
     public String formatStockMsg(StockMsg stockMsg) {
         return String.format(
-                "📌 代码代码: %s\n📅 发布时间: %s\n📰 新闻标题: %s\n📰 中文标题: %s\n🏷️ 新闻标签: %s\n🔗新闻链接: %s\n📊 统计: 24小时内异动=%d次; 3天内异动=%d次; 1周内异动=%d次",
+                "📌 代码: %s\n📅 时间: %s\n📰 标题: %s\n📰 中标: %s\n🏷️ 标签: %s\n🔗 链接: %s\n📊 统计: 24小时内异动=%d次; 3天内异动=%d次; 1周内异动=%d次",
                 stockMsg.getStockCode(),
                 stockMsg.getPublishTimeCn(),
                 stockMsg.getTitle(),
