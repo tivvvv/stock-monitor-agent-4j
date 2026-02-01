@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: stock-monitor-mcp
+  profiles:
+    active: prod
+
+mybatis-plus:
+  global-config:
+    db-config:
+      update-strategy: not_empty
+  mapper-locations: classpath*:/mappers/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+
+logging:
+  level:
+    root: info
