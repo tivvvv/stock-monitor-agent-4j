@@ -9,6 +9,13 @@ spring:
         version: 1.0.0
         sse-endpoint: /sse
         type: async
+  mail:
+    host: smtp.163.com
+    username: username@163.com
+    password: password
+    port: 25
+    default-encoding: UTF-8
+    protocol: smtp
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
     driver-class-name: com.mysql.cj.jdbc.Driver
