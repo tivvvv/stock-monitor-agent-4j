@@ -28,13 +28,11 @@ public class EmailTool {
 
     @Tool(description = "获取邮件工具的发件人")
     public String getSender() {
-        log.info("========== 调用MCP工具: 获取邮件工具的发件人 getSender() ==========");
         return sender;
     }
 
     @Tool(description = "发送邮件")
     public void sendEmail(EmailInfo emailInfo) {
-        log.info("========== 调用MCP工具: 发送邮件 sendEmail() ==========");
         try {
             MimeMessage mimeMessage = javaMailSender.createMimeMessage();
             MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, true);
