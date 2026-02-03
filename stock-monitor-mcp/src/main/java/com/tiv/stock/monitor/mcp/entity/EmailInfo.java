@@ -19,4 +19,7 @@ public class EmailInfo {
     @ToolParam(description = "邮件内容")
     private String content;
 
+    @ToolParam(description = "邮件内容类型Text/HTML/Markdown")
+    private String contentType;
+
 }
