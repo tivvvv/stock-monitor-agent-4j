@@ -2,6 +2,7 @@ package com.tiv.stock.monitor.mcp.config;
 
 import com.tiv.stock.monitor.mcp.tools.DateTimeTool;
 import com.tiv.stock.monitor.mcp.tools.EmailTool;
+import com.tiv.stock.monitor.mcp.tools.StockTool;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.tool.method.MethodToolCallbackProvider;
 import org.springframework.context.annotation.Bean;
@@ -15,9 +16,10 @@ public class McpToolConfig {
 
     @Bean
     public ToolCallbackProvider mcpToolCallbackProvider(DateTimeTool dateTimeTool,
-                                                        EmailTool emailTool) {
+                                                        EmailTool emailTool,
+                                                        StockTool stockTool) {
         return MethodToolCallbackProvider.builder()
-                .toolObjects(dateTimeTool, emailTool)
+                .toolObjects(dateTimeTool, emailTool, stockTool)
                 .build();
     }
 
