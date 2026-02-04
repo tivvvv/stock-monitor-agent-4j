@@ -1,6 +1,7 @@
 package com.tiv.stock.monitor.mcp.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.tiv.stock.monitor.mcp.entity.StockAndCount;
 import com.tiv.stock.monitor.mcp.entity.StockRssInfo;
 import com.tiv.stock.monitor.mcp.mapper.StockRssInfoMapper;
 import com.tiv.stock.monitor.mcp.service.StockService;
@@ -28,6 +29,11 @@ public class StockServiceImpl implements StockService {
         queryWrapper.orderByDesc("publish_time_cn");
 
         return stockRssInfoMapper.selectList(queryWrapper);
+    }
+
+    @Override
+    public List<StockAndCount> getStockAboveTargetCount(Integer targetCount, LocalDateTime startDate, LocalDateTime endDate) {
+        return stockRssInfoMapper.getStockAboveTargetCount(targetCount, startDate, endDate);
     }
 
 }

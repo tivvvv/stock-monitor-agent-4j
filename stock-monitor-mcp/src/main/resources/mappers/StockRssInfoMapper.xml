@@ -3,4 +3,25 @@
 
 <mapper namespace="com.tiv.stock.monitor.mcp.mapper.StockRssInfoMapper">
 
+    <select id="getStockAboveTargetCount" resultType="com.tiv.stock.monitor.mcp.entity.StockAndCount">
+        SELECT
+        stock_code AS stockCode,
+        COUNT(*) AS occurCount
+        FROM
+        stock_rss_info
+        <where>
+            <if test="startDate != null">
+                AND publish_time_cn &gt;= #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND publish_time_cn &lt;= #{endDate}
+            </if>
+        </where>
+        GROUP BY
+        stock_code
+        HAVING
+        occurCount &gt;= #{targetCount}
+        ORDER BY occurCount DESC
+    </select>
+
 </mapper>
