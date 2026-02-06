@@ -13,4 +13,6 @@ public interface StockRssInfoMapper extends BaseMapper<StockRssInfo> {
 
     List<StockAndCount> getStockAboveTargetCount(Integer targetCount, LocalDateTime startDate, LocalDateTime endDate);
 
+    List<StockRssInfo> getStockNewsByKeywords(List<String> keywords);
+
 }

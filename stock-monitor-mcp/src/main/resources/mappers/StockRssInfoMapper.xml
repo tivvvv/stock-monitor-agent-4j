@@ -24,4 +24,16 @@
         ORDER BY occurCount DESC
     </select>
 
+    <select id="getStockNewsByKeywords" resultType="com.tiv.stock.monitor.mcp.entity.StockRssInfo">
+        SELECT
+        *
+        FROM
+        stock_rss_info
+        WHERE
+        <foreach collection="keywords" item="item" separator=" OR ">
+            title LIKE CONCAT('%', #{item}, '%') OR title_cn LIKE CONCAT('%', #{item}, '%')
+        </foreach>
+        ORDER BY publish_time_cn DESC
+    </select>
+
 </mapper>

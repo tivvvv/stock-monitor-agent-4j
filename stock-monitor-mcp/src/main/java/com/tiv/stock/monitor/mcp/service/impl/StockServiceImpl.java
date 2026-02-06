@@ -36,4 +36,9 @@ public class StockServiceImpl implements StockService {
         return stockRssInfoMapper.getStockAboveTargetCount(targetCount, startDate, endDate);
     }
 
+    @Override
+    public List<StockRssInfo> getStockNewsByKeywords(List<String> keywords) {
+        return stockRssInfoMapper.getStockNewsByKeywords(keywords);
+    }
+
 }

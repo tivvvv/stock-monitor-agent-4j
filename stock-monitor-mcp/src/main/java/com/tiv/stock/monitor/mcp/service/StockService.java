@@ -12,4 +12,6 @@ public interface StockService {
 
     List<StockAndCount> getStockAboveTargetCount(Integer targetCount, LocalDateTime startDate, LocalDateTime endDate);
 
+    List<StockRssInfo> getStockNewsByKeywords(List<String> keywords);
+
 }
