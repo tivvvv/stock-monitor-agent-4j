@@ -19,11 +19,11 @@ spring:
       connection-test-query: SELECT 1
 
 translate:
-  url: url
-  appId: appId
-  secretKey: secretKey
+  url: ${TRANSLATE_URL}
+  appId: ${TRANSLATE_APP_ID}
+  secretKey: ${TRANSLATE_SECRET_KEY}
 
 dingTalk:
-  url: url
-  robotToken: robotToken
-  secretKey: secretKey
+  url: ${DING_TALK_URL}
+  robotToken: ${DING_TALK_ROBOT_TOKEN}
+  secretKey: ${DING_TALK_SECRET_KEY}

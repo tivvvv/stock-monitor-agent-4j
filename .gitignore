@@ -42,3 +42,4 @@ build/
 
 ### Application Config ###
 application-prod.yml
+.env

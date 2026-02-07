@@ -2,7 +2,7 @@ spring:
   application:
     name: stock-monitor-web
   profiles:
-    active: prod
+    active: dev
   data:
     redis:
       host: localhost
